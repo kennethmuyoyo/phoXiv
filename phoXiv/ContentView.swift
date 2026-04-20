@@ -1,21 +1,26 @@
 //
 //  ContentView.swift
-//  phoXiv
+//  PhotoRecreate
 //
-//  Created by Kenneth Muyoyo on 20/04/26.
+//  Created by Kenneth Muyoyo on 15/04/26.
 //
 
 import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        
+        TabView {
+            Tab("Library", systemImage: "photo.fill") {
+                Library()
+            }
+            Tab("Collections", systemImage: "heart.fill") {
+                Collections()
+            }
+            Tab(role: .search){
+                SearchView()
+            }
         }
-        .padding()
     }
 }
 

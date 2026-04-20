@@ -15,3 +15,7 @@ struct phoXivApp: App {
         }
     }
 }
+
+#Preview {
+    ContentView()
+}
