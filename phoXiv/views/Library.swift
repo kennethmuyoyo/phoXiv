@@ -6,170 +6,66 @@
 //
 
 import SwiftUI
+import Combine
+import Photos
 
 struct Library: View {
-    let grids: [GridItem] = [GridItem(.adaptive(minimum: 80), spacing:1)]
+    @EnvironmentObject var vm: LibraryViewModel
+    
+    let columns: [GridItem] = [
+        GridItem(.adaptive(minimum: 80), spacing: 1)
+    ]
+    
     var body: some View {
         NavigationStack {
-            
-            
-            ScrollView {
-                LazyVGrid(columns: grids, spacing: 1) {
-                    
-                    Group {
-                        Image(.photo10)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo11)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo12)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo13)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo10)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo11)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo12)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo13)
-                            .resizable()
-                            .scaledToFit()
+            Group {
+                switch vm.authorizationStatus {
+                case .authorized, .limited:
+                    ScrollView {
+                        LazyVGrid(columns: columns, spacing: 1) {
+                            ForEach(vm.images) { image in
+                                if !image.archived {
+                                    NavigationLink {
+                                        PhotoDetails(image: image)
+                                    } label: {
+                                        PhotoContainer(asset: image.asset)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                        }
                     }
                     
-                    Group {
-                        Image(.photo10)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo11)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo12)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo13)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo10)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo11)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo12)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo13)
-                            .resizable()
-                            .scaledToFit()
+                case .denied, .restricted:
+                    VStack {
+                        Text("Access to photos is denied.")
+                        Button("Open Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
                     }
                     
-                    Group {
-                        Image(.photo10)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo11)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo12)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo13)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo10)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo11)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo12)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo13)
-                            .resizable()
-                            .scaledToFit()
-                    }
+                case .notDetermined:
+                    ProgressView("Requesting permission...")
                     
-                    Group {
-                        Image(.photo10)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo11)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo12)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo13)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo10)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo11)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo12)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo13)
-                            .resizable()
-                            .scaledToFit()
-                    }
-                    
-                    Group {
-                        Image(.photo10)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo11)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo12)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo13)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo10)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo11)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo12)
-                            .resizable()
-                            .scaledToFit()
-                        Image(.photo13)
-                            .resizable()
-                            .scaledToFit()
-                    }
-                    
+                @unknown default:
+                    EmptyView()
                 }
             }
             .navigationTitle("Photos")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Image(systemName: "line.3.horizontal.decrease")
-                }
-                ToolbarSpacer(placement: .topBarTrailing)
-                ToolbarItem(placement: .topBarTrailing) {
                     Text("Select")
                         .padding()
                 }
-                
             }
-            .toolbarTitleDisplayMode(.inlineLarge)
-            }
+            .toolbarTitleDisplayMode(.inline)
         }
     }
-    
-    #Preview {
-        Library()
-    }
+}
+
+#Preview {
+    Library()
+}
+

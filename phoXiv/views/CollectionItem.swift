@@ -11,7 +11,7 @@ struct CollectionItem: View {
     var width: CGFloat = 120
     var height: CGFloat = 120
     var fontSize: CGFloat = 14
-    var image: Image = Image(.photo21)
+    var image: Image = Image(.photo20)
     
     var body: some View {
         ZStack{

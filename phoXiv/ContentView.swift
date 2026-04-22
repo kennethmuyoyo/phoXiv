@@ -6,18 +6,18 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct ContentView: View {
     var body: some View {
-        
-        TabView {
+        return TabView {
             Tab("Library", systemImage: "photo.fill") {
                 Library()
             }
-            Tab("Collections", systemImage: "heart.fill") {
-                Collections()
+            Tab("Archive", systemImage: "square.and.arrow.down.on.square") {
+                Archive()
             }
-            Tab(role: .search){
+            Tab("", systemImage: "photo.stack.fill", role: .search){
                 SearchView()
             }
         }

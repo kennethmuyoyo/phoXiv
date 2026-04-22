@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct Collections: View {
+struct Archive: View {
     @State private var memoriesExpanded = true
     @State private var pinnedExpanded = true
     @State private var allbumExpanded = true
@@ -254,6 +254,6 @@ struct Collections: View {
 
 
 #Preview {
-    Collections()
+    Archive()
     //    ContentView()
 }
