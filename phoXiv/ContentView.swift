@@ -18,7 +18,7 @@ struct ContentView: View {
                 Library()
             }
             Tab("Archive", systemImage: "archivebox.fill") {
-                Collections()
+                Archive()
             }
         }
     }
