@@ -55,13 +55,13 @@ struct Library: View {
             }
             .navigationTitle("Photos")
             .toolbar {
+                ToolbarSpacer()
                 ToolbarItem(placement: .topBarTrailing) {
                     Text("Select")
                         .padding()
                 }
             }
             .toolbarTitleDisplayMode(.inlineLarge)
-
         }
     }
 }

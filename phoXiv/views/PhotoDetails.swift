@@ -11,6 +11,7 @@ struct PhotoDetails: View {
     let image: ImageItem
     var isArchived: Bool = false
     let location: String = "Bali, Indonesia" // you can make this dynamic
+    @EnvironmentObject var lvm: LibraryViewModel
     @Environment(\.dismiss) private var dismiss
     @StateObject private var vm = PhotoDetailsViewModel()
 
@@ -35,7 +36,7 @@ struct PhotoDetails: View {
 
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(isArchived ? "Unarchive" : "Archive") {
-                    vm.moveToArchive(image: image)
+                    vm.moveToArchive(image: image, vm: lvm, dismiss: dismiss)
                 }
             }
 
