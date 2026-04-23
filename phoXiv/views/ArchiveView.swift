@@ -51,7 +51,7 @@ struct ArchiveView: View {
             .onAppear {
                 stack.onSwipeCommitted = { item, direction in
                     if let idx = vm.images.firstIndex(where: { $0.id == item.id }) {
-                        vm.images[idx].isSorted = true
+                        vm.images[idx].sorted = true
                         vm.images[idx].archived = (direction == .left)
                     }
                 }

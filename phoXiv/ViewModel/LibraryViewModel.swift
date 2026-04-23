@@ -7,7 +7,7 @@ final class LibraryViewModel: ObservableObject {
     @Published var authorizationStatus: PHAuthorizationStatus = .notDetermined
 
     var unsortedImages: [ImageItem] {
-        images.filter { !$0.isSorted }
+        images.filter { !$0.sorted }
     }
     
     private let imageManager = PHImageManager.default()

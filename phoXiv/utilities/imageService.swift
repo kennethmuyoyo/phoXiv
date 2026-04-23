@@ -35,11 +35,11 @@ struct ImageService {
         }
     }
 
-    func sortImage(asset: PHAsset, direction: CardSwipeDirection) {
+    func sortImage(asset: PHAsset, direction: CardSwipeDirection, vm: LibraryViewModel) {
         if let idx = vm.images.firstIndex(where: {
             $0.id == asset.localIdentifier
         }) {
-            vm.images[idx].isSorted = true
+            vm.images[idx].sorted = true
             vm.images[idx].archived = (direction == .left)
         }
     }
