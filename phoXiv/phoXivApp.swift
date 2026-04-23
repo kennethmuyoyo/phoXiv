@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct phoXivApp: App {
+    var photoLibrary = LibraryViewModel()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(photoLibrary)
         }
     }
 }

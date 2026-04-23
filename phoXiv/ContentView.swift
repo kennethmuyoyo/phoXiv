@@ -6,10 +6,10 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct ContentView: View {
-    var body: some View {
-        
+    var body: some View {        
         TabView {
             Tab("Sort", systemImage: "move.3d") {
                 ArchiveView()
@@ -20,7 +20,6 @@ struct ContentView: View {
             Tab("Archive", systemImage: "archivebox.fill") {
                 Collections()
             }
-            
         }
     }
 }
