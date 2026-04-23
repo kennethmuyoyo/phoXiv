@@ -10,49 +10,114 @@ import Photos
 
 struct Archive: View {
     @EnvironmentObject var vm: LibraryViewModel
-
+    @State private var screenshotsExpanded = true
+    @State private var allArchivedPhotos: [ImageItem] = []
+    @State private var archivedScreenshots: [ImageItem] = []
     let columns: [GridItem] = [
         GridItem(.adaptive(minimum: 80), spacing: 1)
     ]
-
+    
     var body: some View {
         NavigationStack {
-            Group {
-                let archivedImages = vm.images.filter { $0.archived }
-                if archivedImages.isEmpty {
-                    ContentUnavailableView(
-                        "No Archived Photos",
-                        systemImage: "archivebox",
-                        description: Text("Photos you archive will appear here.")
-                    )
-                } else {
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: 1) {
-                            ForEach(archivedImages) { image in
-                                NavigationLink {
-                                    PhotoDetails(image: image, isArchived: true)
-                                } label: {
-                                    PhotoContainer(asset: image.asset)
-                                }
-                                .buttonStyle(.plain)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack {
+                        Text("Screenshots")
+                            .font(.title2.bold())
+                        if screenshotsExpanded {
+                            Button {} label: {
+                                Image(systemName: "chevron.right")
+                                    .font(Font.system(size: 14, weight: .bold))
+                                    .foregroundStyle(Color(.black.opacity(0.5)))
                             }
                         }
+                        Spacer()
+                        Button {
+                            withAnimation(.default){
+                                screenshotsExpanded.toggle()}
+                        } label: {
+                            Image(systemName: screenshotsExpanded ? "chevron.down" : "chevron.right")
+                                .frame(width: 30, height: 30)
+                                .font(Font.system(size: 14, weight: .bold))
+                            
+                        }
+                        .glassEffect(.regular.tint(.gray.opacity(0.2)), in: .circle
+                        )
+                        
+                    }
+                    .padding(20)
+                    
+                    if screenshotsExpanded {
+                        ScrollView(.horizontal) {
+                            LazyHStack(spacing: 12) {
+                                ForEach(archivedScreenshots) { screenshot in
+                                    CollectionItem(width: 200, height: 200, fontSize: 18, asset: screenshot.asset)
+                                }
+                            }
+                            .scrollTargetLayout()
+                            .padding(.horizontal, 20)
+                        }
+                        .scrollTargetBehavior(.viewAligned)
+                        .scrollIndicators(.hidden)
+                        .transition(.move(edge: .top).combined(with: .opacity))
                     }
                 }
+                LazyVGrid(columns: columns, spacing: 1) {
+                    ForEach(allArchivedPhotos) { image in
+                        NavigationLink {
+                            PhotoDetails(image: image)
+                        } label: {
+                            PhotoContainer(asset: image.asset)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                
+                
+                //            DisclosureGroup("Pinned", isExpanded: $collectionsExpanded) {
+                //                ScrollView(.horizontal) {
+                //                        HStack (spacing: 16){
+                //                            CollectionItem()
+                //                            CollectionItem()
+                //                            CollectionItem()
+                //                            CollectionItem()
+                //                            CollectionItem()
+                //                            CollectionItem()
+                //                        }
+                //                        .scrollTargetLayout()
+                //
+                //                }
+                //                .scrollTargetBehavior(.viewAligned)
+                //                .scrollIndicators(.hidden)
+                //            }
+                //            .font(.title.bold())
+                //            .padding(10)
+                //            .foregroundColor(.primary)
+                //
+                //            DisclosureGroup("Albums", isExpanded: $collectionsExpanded) {
+                //                CollectionItem()
+                //            }
+                //            .font(.title.bold())
+                //            .padding(10)
+                //            .foregroundColor(.primary)
+                //
             }
             .navigationTitle("Archive")
             .toolbar {
+                ToolbarSpacer()
                 ToolbarItem(placement: .topBarTrailing) {
-                    Image(systemName: "ellipsis")
-                }
-                ToolbarSpacer(placement: .topBarTrailing)
-                ToolbarItem(placement: .topBarTrailing) {
-                    Image(systemName: "person.fill")
-                        .font(.body.bold())
-                        .foregroundStyle(.blue)
+                    Text("Select")
+                        .padding()
                 }
             }
             .toolbarTitleDisplayMode(.inlineLarge)
+            .onAppear(
+                perform: {
+                    archivedScreenshots = vm.filterImages(archived: true, mediaSubtype: PHAssetMediaSubtype.photoScreenshot)
+                    allArchivedPhotos = vm.filterImages(archived: true, mediaSubtype: nil)
+                    if $archivedScreenshots.count > 0 { screenshotsExpanded = true } else { screenshotsExpanded = false }
+                }
+            )
         }
     }
 }

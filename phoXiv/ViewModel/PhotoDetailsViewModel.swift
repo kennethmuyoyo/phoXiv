@@ -26,7 +26,7 @@ class PhotoDetailsViewModel: ObservableObject {
         }
     }
     
-    func moveToArchive(image: ImageItem, vm: LibraryViewModel, dismiss: DismissAction) {
+    func moveFromToArchive(image: ImageItem, vm: LibraryViewModel, dismiss: DismissAction) {
         service.moveImage(asset: image.asset, vm: vm)
         dismiss()
     }

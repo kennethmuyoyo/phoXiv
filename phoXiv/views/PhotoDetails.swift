@@ -9,7 +9,6 @@ import Photos
 
 struct PhotoDetails: View {
     let image: ImageItem
-    var isArchived: Bool = false
     let location: String = "Bali, Indonesia" // you can make this dynamic
     @EnvironmentObject var lvm: LibraryViewModel
     @Environment(\.dismiss) private var dismiss
@@ -35,8 +34,8 @@ struct PhotoDetails: View {
             }
 
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button(isArchived ? "Unarchive" : "Archive") {
-                    vm.moveToArchive(image: image, vm: lvm, dismiss: dismiss)
+                Button(image.archived ? "Unarchive" : "Archive") {
+                    vm.moveFromToArchive(image: image, vm: lvm, dismiss: dismiss)
                 }
             }
 

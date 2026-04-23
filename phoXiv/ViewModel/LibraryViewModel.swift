@@ -38,6 +38,18 @@ final class LibraryViewModel: ObservableObject {
         }
     }
     
+    func filterImages(archived: Bool?, mediaSubtype: PHAssetMediaSubtype?) -> [ImageItem] {
+        var filteredImageItems: [ImageItem]
+
+        filteredImageItems = images.filter { item in
+            if let archived { guard item.archived == archived else { return false } }
+            if let mediaSubtype { guard item.asset.mediaSubtypes.contains(mediaSubtype) else { return false } }
+            return true
+        }
+
+        return filteredImageItems
+    }
+    
     // It fetches all assets and only adds the new ones.
     private func fetchAssets() {
         let options = PHFetchOptions()
