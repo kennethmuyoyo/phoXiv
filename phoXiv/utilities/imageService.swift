@@ -32,4 +32,13 @@ struct ImageService {
                 vm.images[idx].archived.toggle()
             }
     }
+
+    func sortImage(asset: PHAsset, direction: CardSwipeDirection) {
+        if let idx = vm.images.firstIndex(where: {
+            $0.id == asset.localIdentifier
+        }) {
+            vm.images[idx].isSorted = true
+            vm.images[idx].archived = (direction == .left)
+        }
+    }
 }

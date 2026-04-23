@@ -24,11 +24,11 @@ final class HeadTiltViewModel: NSObject {
 
     // MARK: - Tunables
 
-    var headTiltMax: Float = 0.20
-    var deadzone: Float = 0.05
+    var headTiltMax: Float = 0.25
+    var deadzone: Float = 0.10
     var recenterThreshold: Float = 0.40
     var minSuppressionTime: TimeInterval = 0.4
-    var smoothingMix: Float = 0.05
+    var smoothingMix: Float = 0.03
     var publishInterval: TimeInterval = 0.10
     var calibrationDuration: TimeInterval = 1.0
 
@@ -41,6 +41,7 @@ final class HeadTiltViewModel: NSObject {
     private var calibrationSamples: [Float] = []
     private var neutralRoll: Float = 0
     private var minSuppressionUntil: Date = .distantPast
+    private var trackedAnchorID: UUID?
 
     // MARK: - Capability Checks (synchronous, no side effects)
 
@@ -81,7 +82,7 @@ final class HeadTiltViewModel: NSObject {
 
     func stop() {
         session.pause()
-        // Reset visible state so the view doesn't show stale progress.
+        trackedAnchorID = nil
         state.signedProgress = 0
         state.needsRecenter = false
         state.calibration = .uncalibrated
@@ -90,6 +91,7 @@ final class HeadTiltViewModel: NSObject {
     func beginCalibration() {
         calibrationSamples.removeAll(keepingCapacity: true)
         calibrationStartedAt = Date()
+        trackedAnchorID = nil
         state.calibration = .calibrating
         state.needsRecenter = false
     }
@@ -104,6 +106,15 @@ final class HeadTiltViewModel: NSObject {
     // MARK: - Frame Processing
 
     private func handleFaceAnchor(_ anchor: ARFaceAnchor) {
+        // Lock to one face: during calibration, adopt the first face we see.
+        // After that, ignore any other faces in frame.
+        if state.calibration == .calibrating && trackedAnchorID == nil {
+            trackedAnchorID = anchor.identifier
+        }
+        if let tracked = trackedAnchorID, anchor.identifier != tracked {
+            return
+        }
+
         let rawRoll = extractRoll(from: anchor.transform)
 
         switch state.calibration {
