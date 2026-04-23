@@ -232,6 +232,7 @@ struct Collections: View {
                 //
             }
             .navigationTitle("Archive")
+
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Image(systemName: "ellipsis")

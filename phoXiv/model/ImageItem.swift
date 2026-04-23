@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+
 struct ImageItem: Identifiable, Hashable {
     let id = UUID()
     var title: String
@@ -94,4 +95,3 @@ let imageMock: [ImageItem] = [
     )
 ]
 #endif
-
