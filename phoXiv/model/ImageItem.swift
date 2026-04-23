@@ -14,4 +14,5 @@ struct ImageItem: Identifiable, Hashable {
     let asset: PHAsset
     var archived: Bool = false
     var sorted: Bool = false
+
 }

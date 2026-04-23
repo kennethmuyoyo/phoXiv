@@ -5,6 +5,10 @@ import Combine
 final class LibraryViewModel: ObservableObject {
     @Published var images: [ImageItem] = []
     @Published var authorizationStatus: PHAuthorizationStatus = .notDetermined
+
+    var unsortedImages: [ImageItem] {
+        images.filter { !$0.isSorted }
+    }
     
     private let imageManager = PHImageManager.default()
     

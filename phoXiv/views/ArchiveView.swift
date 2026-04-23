@@ -11,9 +11,11 @@
 
 import SwiftUI
 import AVFoundation
+import Photos
 
 struct ArchiveView: View {
-    @State private var stack = CardStackViewModel(items: imageMock)
+    @EnvironmentObject var vm: LibraryViewModel
+    @State private var stack = CardStackViewModel<ImageItem>(items: [])
     @State private var head = HeadTiltViewModel()
 
     @State private var isCommitting = false
@@ -46,6 +48,19 @@ struct ArchiveView: View {
                 showingUnsupportedAlert: $showingUnsupportedAlert,
                 onEnable: { Task { await enableHeadTracking() } }
             ))
+            .onAppear {
+                stack.onSwipeCommitted = { item, direction in
+                    if let idx = vm.images.firstIndex(where: { $0.id == item.id }) {
+                        vm.images[idx].isSorted = true
+                        vm.images[idx].archived = (direction == .left)
+                    }
+                }
+            }
+            .onChange(of: vm.images) { _, _ in
+                if stack.items.isEmpty {
+                    stack.reset(with: vm.unsortedImages)
+                }
+            }
             .onDisappear { head.stop() }
             .onChange(of: stack.isUserDragging) { _, dragging in
                 if dragging { dismissHint() }
@@ -92,12 +107,18 @@ struct ArchiveView: View {
         }
     }
 
+    private var isLoading: Bool {
+        vm.images.isEmpty && (vm.authorizationStatus == .notDetermined || vm.authorizationStatus == .authorized || vm.authorizationStatus == .limited)
+    }
+
     @ViewBuilder
     private var stackOrEmptyState: some View {
         VStack {
-            if isAllDone {
+            if isLoading {
+                ProgressView()
+            } else if isAllDone {
                 AllDoneView {
-                    withAnimation { stack.reset(with: imageMock) }
+                    withAnimation { stack.reset(with: vm.unsortedImages) }
                 }
             } else {
                 cardStack
