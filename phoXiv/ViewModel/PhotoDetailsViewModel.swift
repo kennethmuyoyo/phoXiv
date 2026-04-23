@@ -3,9 +3,12 @@ import Combine
 import Photos
 
 class PhotoDetailsViewModel: ObservableObject {
-    @Environment(\.dismiss) var dismiss
     @Published var image: Image?
-    let service = ImageService()
+    let service: ImageService
+    
+    init() {
+        self.service = ImageService()
+    }
     
     func loadImageThumbnail(from asset: PHAsset) {
         service.getImage(from: asset, size: CGSize(width: 300, height: 300)) { [weak self] image in
@@ -23,8 +26,8 @@ class PhotoDetailsViewModel: ObservableObject {
         }
     }
     
-    func moveToArchive(image: ImageItem) {
-        service.moveImage(asset: image.asset)
+    func moveToArchive(image: ImageItem, vm: LibraryViewModel, dismiss: DismissAction) {
+        service.moveImage(asset: image.asset, vm: vm)
         dismiss()
     }
 }

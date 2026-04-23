@@ -4,8 +4,7 @@ import Photos
 
 @MainActor
 struct ImageService {
-    @EnvironmentObject var vm: LibraryViewModel
-
+    
     func getImage(from asset: PHAsset, size: CGSize, completion: @escaping (Image?) -> Void) {
         let manager = PHImageManager.default()
         
@@ -25,11 +24,14 @@ struct ImageService {
         }
     }
     
-    func moveImage(asset: PHAsset) {
-            if let idx = vm.images.firstIndex(where: {
-                $0.id == asset.localIdentifier
-            }) {
-                vm.images[idx].archived.toggle()
+    func moveImage(asset: PHAsset, vm: LibraryViewModel) {
+        if let idx = vm.images.firstIndex(where: {
+            $0.id == asset.localIdentifier
+        }) {
+            vm.images[idx].archived.toggle()
+            if !vm.images[idx].sorted {
+                vm.images[idx].sorted.toggle()
             }
+        }
     }
 }
