@@ -231,7 +231,7 @@ struct Collections: View {
                 //            .foregroundColor(.primary)
                 //
             }
-            .navigationTitle("Collections")
+            .navigationTitle("Archive")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Image(systemName: "ellipsis")

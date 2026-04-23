@@ -11,15 +11,16 @@ struct ContentView: View {
     var body: some View {
         
         TabView {
+            Tab("Sort", systemImage: "move.3d") {
+                ArchiveView()
+            }
             Tab("Library", systemImage: "photo.fill") {
                 Library()
             }
-            Tab("Collections", systemImage: "heart.fill") {
+            Tab("Archive", systemImage: "archivebox.fill") {
                 Collections()
             }
-            Tab(role: .search){
-                SearchView()
-            }
+            
         }
     }
 }
