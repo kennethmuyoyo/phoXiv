@@ -8,26 +8,50 @@
 //
 
 import SwiftUI
+import Photos
 
 struct PhotoCard: View {
     let item: ImageItem
     let progress: CGFloat
     let direction: CardSwipeDirection
 
+    @State private var uiImage: UIImage?
+
     var body: some View {
         ZStack {
-            Image(item.image)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 280, height: 420)
-                .clipped()
-                .padding(20)
-                .background(Color.white)
-                .shadow(color: .black.opacity(0.4), radius: 20, x: 0, y: 10)
+            Group {
+                if let uiImage {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } else {
+                    Color.gray
+                }
+            }
+            .frame(width: 280, height: 420)
+            .clipped()
+            .padding(20)
+            .background(Color.white)
+            .shadow(color: .black.opacity(0.4), radius: 20, x: 0, y: 10)
 
             stampOverlay
         }
         .frame(width: 320, height: 460)
+        .onAppear {
+            let options = PHImageRequestOptions()
+            options.isNetworkAccessAllowed = true
+            options.deliveryMode = .opportunistic
+
+            PHImageManager.default().requestImage(
+                for: item.asset,
+                targetSize: CGSize(width: 560, height: 840),
+                contentMode: .aspectFill,
+                options: options
+            ) { image, _ in
+                guard let image else { return }
+                self.uiImage = image
+            }
+        }
     }
 
     @ViewBuilder

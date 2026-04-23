@@ -60,7 +60,8 @@ struct Library: View {
                         .padding()
                 }
             }
-            .toolbarTitleDisplayMode(.inline)
+            .toolbarTitleDisplayMode(.inlineLarge)
+
         }
     }
 }
@@ -68,4 +69,3 @@ struct Library: View {
 #Preview {
     Library()
 }
-
