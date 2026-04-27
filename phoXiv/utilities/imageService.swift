@@ -4,46 +4,49 @@ import Photos
 
 @MainActor
 struct ImageService {
-    
+
     func getImage(from asset: PHAsset, size: CGSize, completion: @escaping (Image?) -> Void) {
         let manager = PHImageManager.default()
-        
+
         let options = PHImageRequestOptions()
         options.isSynchronous = false
         options.isNetworkAccessAllowed = true
         options.deliveryMode = .highQualityFormat
-        
+
         manager.requestImage(
             for: asset,
             targetSize: size,
             contentMode: .aspectFill,
             options: options
         ) { image, _ in
-            // Convert UIImage to Image
             completion(Image(uiImage: image ?? UIImage()))
         }
     }
-    
+
+    // Toggles the archived state of an image and persists the new state.
+    // vm.saveRecord reads the updated in-memory value and writes it to SwiftData.
     func moveImage(asset: PHAsset, vm: LibraryViewModel) {
-        if let idx = vm.images.firstIndex(where: {
-            $0.id == asset.localIdentifier
-        }) {
+        if let idx = vm.images.firstIndex(where: { $0.id == asset.localIdentifier }) {
             vm.images[idx].archived.toggle()
             if !vm.images[idx].sorted {
                 vm.images[idx].sorted.toggle()
             }
+            vm.saveRecord(for: asset.localIdentifier)
         }
     }
 
+    // Marks an image as sorted and sets its archived state based on swipe direction.
+    // Persists immediately so the decision survives the next launch.
     func sortImage(asset: PHAsset, direction: CardSwipeDirection, vm: LibraryViewModel) {
-        if let idx = vm.images.firstIndex(where: {
-            $0.id == asset.localIdentifier
-        }) {
+        if let idx = vm.images.firstIndex(where: { $0.id == asset.localIdentifier }) {
             vm.images[idx].sorted = true
             vm.images[idx].archived = (direction == .left)
+            vm.saveRecord(for: asset.localIdentifier)
         }
     }
-    
+
+    // Deletes the photo from the Photos library and removes its persistence record.
+    // Without deleteRecord the SwiftData entry would linger as an orphan forever.
     func delete(asset: PHAsset, vm: LibraryViewModel, completion: @escaping (Bool) -> Void) {
         PHPhotoLibrary.shared().performChanges({
             PHAssetChangeRequest.deleteAssets([asset] as NSArray)
@@ -51,6 +54,7 @@ struct ImageService {
             DispatchQueue.main.async {
                 if success {
                     vm.images.removeAll { $0.id == asset.localIdentifier }
+                    vm.deleteRecord(for: asset.localIdentifier)
                 }
                 completion(success && error == nil)
             }

@@ -15,7 +15,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				.gitignore,
-				Info.plist,
 				PhotoRecreate/Assets.xcassets,
 			);
 			target = 3C08A0AD2F95CD6800DA9385 /* phoXiv */;

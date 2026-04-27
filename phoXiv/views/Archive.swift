@@ -13,10 +13,14 @@ struct Archive: View {
     @State private var screenshotsExpanded = true
     @State private var allArchivedPhotos: [ImageItem] = []
     @State private var archivedScreenshots: [ImageItem] = []
+    @State private var isSelectMode = false
+    @State private var selectedIDs: Set<String> = []
+    @State private var navigateTo: ImageItem? = nil
+
     let columns: [GridItem] = [
         GridItem(.adaptive(minimum: 80), spacing: 1)
     ]
-    
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -44,6 +48,26 @@ struct Archive: View {
                                     .font(Font.system(size: 14, weight: .bold))
                                 
                             }
+                        }
+                        Spacer()
+                        Button {
+                            withAnimation(.default) {
+                                screenshotsExpanded.toggle()
+                            }
+                        } label: {
+                            Image(systemName: screenshotsExpanded ? "chevron.down" : "chevron.right")
+                                .frame(width: 30, height: 30)
+                                .font(Font.system(size: 14, weight: .bold))
+                        }
+                        .glassEffect(.regular.tint(.gray.opacity(0.2)), in: .circle)
+                    }
+                    .padding(20)
+
+                    if screenshotsExpanded {
+                        ScrollView(.horizontal) {
+                            LazyHStack(spacing: 12) {
+                                ForEach(archivedScreenshots) { screenshot in
+                                    CollectionItem(width: 200, height: 200, fontSize: 18, asset: screenshot.asset)
                             .glassEffect(.regular.tint(.gray.opacity(0.2)), in: .circle
                             )
                             
@@ -66,6 +90,38 @@ struct Archive: View {
                         }
                     }
                 }
+
+                LazyVGrid(columns: columns, spacing: 1) {
+                    ForEach(allArchivedPhotos) { image in
+                        let isSelected = selectedIDs.contains(image.id)
+
+                        PhotoContainer(asset: image.asset)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                if isSelectMode {
+                                    toggleSelection(image.id)
+                                } else {
+                                    navigateTo = image
+                                }
+                            }
+                            .overlay {
+                                if isSelectMode && isSelected {
+                                    Color.black.opacity(0.25)
+                                        .allowsHitTesting(false)
+                                }
+                            }
+                            .overlay(alignment: .bottomTrailing) {
+                                if isSelectMode {
+                                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                                        .font(.system(size: 22))
+                                        .foregroundStyle(isSelected ? Color.accentColor : .white)
+                                        .shadow(color: .black.opacity(0.5), radius: 2)
+                                        .padding(6)
+                                        .allowsHitTesting(false)
+                                }
+                            }
+                            .animation(.easeInOut(duration: 0.15), value: isSelected)
+                            .animation(.easeInOut(duration: 0.15), value: isSelectMode)
                 .frame(maxWidth: .infinity)
                 if !allArchivedPhotos.isEmpty {
                     LazyVGrid(columns: columns, spacing: 1) {
@@ -79,45 +135,41 @@ struct Archive: View {
                         }
                     }
                 }
-                
-                
-                //            DisclosureGroup("Pinned", isExpanded: $collectionsExpanded) {
-                //                ScrollView(.horizontal) {
-                //                        HStack (spacing: 16){
-                //                            CollectionItem()
-                //                            CollectionItem()
-                //                            CollectionItem()
-                //                            CollectionItem()
-                //                            CollectionItem()
-                //                            CollectionItem()
-                //                        }
-                //                        .scrollTargetLayout()
-                //
-                //                }
-                //                .scrollTargetBehavior(.viewAligned)
-                //                .scrollIndicators(.hidden)
-                //            }
-                //            .font(.title.bold())
-                //            .padding(10)
-                //            .foregroundColor(.primary)
-                //
-                //            DisclosureGroup("Albums", isExpanded: $collectionsExpanded) {
-                //                CollectionItem()
-                //            }
-                //            .font(.title.bold())
-                //            .padding(10)
-                //            .foregroundColor(.primary)
-                //
             }
             .navigationTitle("Archive")
+            .navigationDestination(item: $navigateTo) { image in
+                PhotoDetails(image: image)
+            }
             .toolbar {
-                ToolbarSpacer()
                 ToolbarItem(placement: .topBarTrailing) {
-                    Text("Select")
-                        .padding()
+                    if isSelectMode {
+                        Button("Unarchive\(selectedIDs.isEmpty ? "" : " (\(selectedIDs.count))")") {
+                            vm.unarchiveItems(ids: selectedIDs)
+                            selectedIDs = []
+                            isSelectMode = false
+                            refreshPhotos()
+                        }
+                        .disabled(selectedIDs.isEmpty)
+                    }
+                }
+                ToolbarSpacer(placement: .topBarTrailing)
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(isSelectMode ? "Cancel" : "Select") {
+                        isSelectMode.toggle()
+                        if !isSelectMode { selectedIDs = [] }
+                    }
                 }
             }
             .toolbarTitleDisplayMode(.inlineLarge)
+            .onAppear { refreshPhotos() }
+        }
+    }
+
+    private func toggleSelection(_ id: String) {
+        if selectedIDs.contains(id) {
+            selectedIDs.remove(id)
+        } else {
+            selectedIDs.insert(id)
             .onAppear(
                 perform: {
                     archivedScreenshots = vm.filterImages(archived: true, mediaSubtype: PHAssetMediaSubtype.photoScreenshot)
@@ -145,10 +197,15 @@ struct Archive: View {
             }
         }
     }
+
+    private func refreshPhotos() {
+        archivedScreenshots = vm.filterImages(archived: true, mediaSubtype: .photoScreenshot)
+        allArchivedPhotos = vm.filterImages(archived: true, mediaSubtype: nil)
+        screenshotsExpanded = !archivedScreenshots.isEmpty
+    }
 }
 
 
 #Preview {
     Archive()
-    //    ContentView()
 }

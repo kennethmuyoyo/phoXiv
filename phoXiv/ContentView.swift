@@ -15,6 +15,7 @@ enum TabSelection {
 }
 
 struct ContentView: View {
+
     @State private var selectedTab: TabSelection = .library // Default to Library
 
     var body: some View {

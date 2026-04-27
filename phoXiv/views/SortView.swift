@@ -70,6 +70,9 @@ struct SortView: View {
                 stack.onSwipeCommitted = { item, direction in
                     service.sortImage(asset: item.asset, direction: direction, vm: vm)
                 }
+                if stack.items.isEmpty && !vm.unsortedImages.isEmpty {
+                    stack.reset(with: vm.unsortedImages)
+                }
             }
             // When the library finishes loading images, populate the stack
             // with unsorted images (only if the stack is currently empty).
