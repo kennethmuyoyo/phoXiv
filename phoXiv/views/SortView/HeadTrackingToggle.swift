@@ -16,7 +16,7 @@ struct HeadTrackingToggle: View {
 
     var body: some View {
         Button(action: onTap) {
-            Image(systemName: "faceid")
+            Image(systemName: "accessibility")
                 .font(.body.bold())
                 .foregroundStyle(isEnabled ? .blue : .secondary)
                 .symbolEffect(.bounce, value: isEnabled)
