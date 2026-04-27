@@ -43,4 +43,17 @@ struct ImageService {
             vm.images[idx].archived = (direction == .left)
         }
     }
+    
+    func delete(asset: PHAsset, vm: LibraryViewModel, completion: @escaping (Bool) -> Void) {
+        PHPhotoLibrary.shared().performChanges({
+            PHAssetChangeRequest.deleteAssets([asset] as NSArray)
+        }) { success, error in
+            DispatchQueue.main.async {
+                if success {
+                    vm.images.removeAll { $0.id == asset.localIdentifier }
+                }
+                completion(success && error == nil)
+            }
+        }
+    }
 }

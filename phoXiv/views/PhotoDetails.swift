@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import Photos
+import PhotosUI
 
 struct PhotoDetails: View {
     let image: ImageItem
@@ -13,6 +14,10 @@ struct PhotoDetails: View {
     @EnvironmentObject var lvm: LibraryViewModel
     @Environment(\.dismiss) private var dismiss
     @StateObject private var vm = PhotoDetailsViewModel()
+    
+    @State private var showShare = false
+    @State private var showInfo = false
+    @State private var shareImage: UIImage?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -42,7 +47,7 @@ struct PhotoDetails: View {
             // Bottom toolbar
             ToolbarItemGroup(placement: .bottomBar) {
                 Button(action: {
-                    // share action
+                    showShare = true
                 }) {
                     Image(systemName: "square.and.arrow.up")
                 }
@@ -50,18 +55,92 @@ struct PhotoDetails: View {
                 Spacer()
 
                 Button(action: {
-                    // info action
+                    showInfo = true
                 }) {
                     Image(systemName: "info.circle")
+                }
+
+                Spacer()
+
+                Button(role: .destructive) {
+                    ImageService().delete(asset: image.asset, vm: lvm) { success in
+                        if success { dismiss() }
+                    }
+                } label: {
+                    Image(systemName: "trash")
                 }
             }
         }
         .toolbarBackground(.visible, for: .navigationBar, .bottomBar)
         .toolbarColorScheme(.none, for: .navigationBar, .bottomBar)
         .toolbar(.hidden, for: .tabBar)
+        .sheet(isPresented: $showShare) {
+            if let uiImage = shareImage {
+                ShareSheet(activityItems: [uiImage])
+            } else {
+                Text("Nothing to share")
+            }
+        }
+        .sheet(isPresented: $showInfo) {
+            InfoView(image: image)
+                .presentationDetents([.medium, .large])
+        }
         .onAppear {
             vm.loadFullSizeImage(from: image.asset)
+            let targetSize = CGSize(width: 2048, height: 2048)
+            ImageService().getImage(from: image.asset, size: targetSize) { _ in
+                // Always fetch a UIImage for sharing via PHImageManager
+                let options = PHImageRequestOptions()
+                options.isSynchronous = false
+                options.isNetworkAccessAllowed = true
+                options.deliveryMode = .highQualityFormat
+                PHImageManager.default().requestImage(for: image.asset, targetSize: targetSize, contentMode: .aspectFill, options: options) { ui, _ in
+                    self.shareImage = ui
+                }
+            }
         }
+    }
+}
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+struct InfoView: View {
+    let image: ImageItem
+
+    var body: some View {
+        List {
+            if let date = image.asset.creationDate {
+                HStack {
+                    Text("Date")
+                    Spacer()
+                    Text(DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .short))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            HStack {
+                Text("Identifier")
+                Spacer()
+                Text(image.id)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.trailing)
+            }
+            HStack {
+                Text("Dimensions")
+                Spacer()
+                Text("\(image.asset.pixelWidth) × \(image.asset.pixelHeight)")
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .navigationTitle("Info")
     }
 }
 

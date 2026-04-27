@@ -26,6 +26,7 @@ struct AmbientBackground: View {
 
             if let item = topItem {
                 BlurredAssetImage(asset: item.asset, itemId: item.id)
+                    .id(item.id)
                 topFadeOverlay
             }
         }
@@ -55,6 +56,12 @@ private struct BlurredAssetImage: View {
 
     @State private var uiImage: UIImage?
 
+    init(asset: PHAsset, itemId: String) {
+        self.asset = asset
+        self.itemId = itemId
+        self._uiImage = State(initialValue: PhotoCard.cache[itemId])
+    }
+
     var body: some View {
         GeometryReader { geo in
             Group {
@@ -73,10 +80,14 @@ private struct BlurredAssetImage: View {
             .overlay(Color.black.opacity(0.25))
         }
         .ignoresSafeArea()
-        .id(itemId)
         .transition(.opacity)
         .animation(.easeInOut(duration: 0.8), value: itemId)
         .onAppear {
+            if let cached = PhotoCard.cache[itemId] {
+                uiImage = cached
+                return
+            }
+
             let options = PHImageRequestOptions()
             options.isNetworkAccessAllowed = true
             options.deliveryMode = .opportunistic

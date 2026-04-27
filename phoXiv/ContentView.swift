@@ -12,7 +12,7 @@ struct ContentView: View {
     var body: some View {        
         TabView {
             Tab("Sort", systemImage: "move.3d") {
-                ArchiveView()
+                SortView()
             }
             Tab("Library", systemImage: "photo.fill") {
                 Library()

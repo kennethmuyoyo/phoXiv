@@ -11,6 +11,8 @@ import SwiftUI
 import Photos
 
 struct PhotoCard: View {
+    static var cache: [String: UIImage] = [:]
+
     let item: ImageItem
     let progress: CGFloat
     let direction: CardSwipeDirection
@@ -38,6 +40,11 @@ struct PhotoCard: View {
         }
         .frame(width: 320, height: 460)
         .onAppear {
+            if let cached = PhotoCard.cache[item.id] {
+                uiImage = cached
+                return
+            }
+
             let options = PHImageRequestOptions()
             options.isNetworkAccessAllowed = true
             options.deliveryMode = .opportunistic
@@ -49,6 +56,7 @@ struct PhotoCard: View {
                 options: options
             ) { image, _ in
                 guard let image else { return }
+                PhotoCard.cache[item.id] = image
                 self.uiImage = image
             }
         }
