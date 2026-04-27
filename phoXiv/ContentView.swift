@@ -9,15 +9,17 @@ import SwiftUI
 import PhotosUI
 
 struct ContentView: View {
-    var body: some View {        
-        TabView {
-            Tab("Sort", systemImage: "move.3d") {
+    @State private var selectedTab = 1
+
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            Tab("Sort", systemImage: "move.3d", value: 0) {
                 SortView()
             }
-            Tab("Library", systemImage: "photo.fill") {
+            Tab("Library", systemImage: "photo.fill", value: 1) {
                 Library()
             }
-            Tab("Archive", systemImage: "archivebox.fill") {
+            Tab("Archive", systemImage: "archivebox.fill", value: 2) {
                 Archive()
             }
         }

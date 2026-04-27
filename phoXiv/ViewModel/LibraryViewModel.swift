@@ -38,6 +38,19 @@ final class LibraryViewModel: ObservableObject {
         }
     }
     
+    func archiveItems(ids: Set<String>) {
+        for i in images.indices where ids.contains(images[i].id) {
+            images[i].archived = true
+            images[i].sorted = true
+        }
+    }
+
+    func unarchiveItems(ids: Set<String>) {
+        for i in images.indices where ids.contains(images[i].id) {
+            images[i].archived = false
+        }
+    }
+
     func filterImages(archived: Bool?, mediaSubtype: PHAssetMediaSubtype?) -> [ImageItem] {
         var filteredImageItems: [ImageItem]
 
