@@ -25,7 +25,7 @@ struct Library: View {
 
     var body: some View {
         NavigationStack {
-            Group {
+            ZStack {
                 switch vm.authorizationStatus {
                 case .authorized, .limited:
                     ScrollView {
@@ -63,6 +63,29 @@ struct Library: View {
                             }
                         }
                     }
+                    
+                    if visibleImages.isEmpty {
+                        VStack {
+                            Spacer()
+
+                            VStack(spacing: 16) {
+                                Image(systemName: "photo.on.rectangle.angled")
+                                    .font(.system(size: 48, weight: .regular))
+                                    .foregroundStyle(.secondary)
+
+                                Text("No photos in Library yet")
+                                    .font(.title3.weight(.semibold))
+
+                                Text("Keep some photos on the Sort tab to see them here.")
+                                    .multilineTextAlignment(.center)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .padding()
+                    }
 
                 case .denied, .restricted:
                     VStack {
@@ -81,7 +104,7 @@ struct Library: View {
                     EmptyView()
                 }
             }
-            .navigationTitle("Photos")
+            .navigationTitle("Library")
             .navigationDestination(item: $navigateTo) { image in
                 PhotoDetails(image: image)
             }

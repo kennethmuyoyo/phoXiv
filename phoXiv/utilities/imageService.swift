@@ -4,7 +4,6 @@ import Photos
 
 @MainActor
 struct ImageService {
-
     func getImage(from asset: PHAsset, size: CGSize, completion: @escaping (Image?) -> Void) {
         let manager = PHImageManager.default()
 
@@ -45,19 +44,25 @@ struct ImageService {
         }
     }
 
-    // Deletes the photo from the Photos library and removes its persistence record.
-    // Without deleteRecord the SwiftData entry would linger as an orphan forever.
-    func delete(asset: PHAsset, vm: LibraryViewModel, completion: @escaping (Bool) -> Void) {
+    // Deletes one or multiple photos and removes persistence records.
+    func delete(assets: [PHAsset], vm: LibraryViewModel, completion: @escaping (Bool) -> Void) {
+
+        let identifiers = Set(assets.map { $0.localIdentifier })
+
         PHPhotoLibrary.shared().performChanges({
-            PHAssetChangeRequest.deleteAssets([asset] as NSArray)
+            PHAssetChangeRequest.deleteAssets(assets as NSArray)
         }) { success, error in
             DispatchQueue.main.async {
-                if success {
-                    vm.images.removeAll { $0.id == asset.localIdentifier }
-                    vm.deleteRecord(for: asset.localIdentifier)
+                if success && error == nil {
+                    vm.images.removeAll { identifiers.contains($0.id) }
+                    identifiers.forEach { vm.deleteRecord(for: $0) }
                 }
                 completion(success && error == nil)
             }
         }
+    }
+    
+    func delete(asset: PHAsset, vm: LibraryViewModel, completion: @escaping (Bool) -> Void) {
+        delete(assets: [asset], vm: vm, completion: completion)
     }
 }

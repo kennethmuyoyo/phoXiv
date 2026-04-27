@@ -16,9 +16,7 @@ struct Archive: View {
 
     var body: some View {
         NavigationStack {
-
             ZStack {
-
                 // MARK: - CONTENT
                 if !allArchivedPhotos.isEmpty {
 
@@ -123,16 +121,36 @@ struct Archive: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     if isSelectMode {
-                        Button("Unarchive\(selectedIDs.isEmpty ? "" : " (\(selectedIDs.count))")") {
-                            vm.unarchiveItems(ids: selectedIDs)
-                            selectedIDs = []
-                            isSelectMode = false
-                            refreshPhotos()
+                        Menu {
+                            Button {
+                                vm.unarchiveItems(ids: selectedIDs)
+                                selectedIDs = []
+                                isSelectMode = false
+                                refreshPhotos()
+                            } label: {
+                                Label("Unarchive\(selectedIDs.isEmpty ? "" : " (\(selectedIDs.count))")", systemImage: "arrow.up.square")
+                            }
+                            .disabled(selectedIDs.isEmpty)
+
+                            Button(role: .destructive) {
+                                vm.deleteItems(ids: selectedIDs) { success in
+                                    if success {
+                                        selectedIDs = []
+                                        isSelectMode = false
+                                        refreshPhotos()
+                                    }
+                                }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                            .disabled(selectedIDs.isEmpty)
+
+                        } label: {
+                            Image(systemName: "ellipsis")
                         }
-                        .disabled(selectedIDs.isEmpty)
                     }
                 }
-
+                ToolbarSpacer(placement: .topBarTrailing)
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(isSelectMode ? "Cancel" : "Select") {
                         isSelectMode.toggle()

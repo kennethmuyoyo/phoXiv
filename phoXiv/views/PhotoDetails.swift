@@ -53,17 +53,20 @@ struct PhotoDetails: View {
 
             // Bottom toolbar
             ToolbarItemGroup(placement: .bottomBar) {
-                if let uiImage = shareImage {
-                    ShareLink(item: Image(uiImage: uiImage), preview: SharePreview("Photo", image: Image(uiImage: uiImage))) {
-                        Image(systemName: "square.and.arrow.up")
-                    }
-                } else {
-                    Button {
+
+                ShareLink(item: shareImage.map { Image(uiImage: $0) } ?? Image(systemName: "square.and.arrow.up"),
+                          preview: SharePreview("Photo", image: shareImage.map { Image(uiImage: $0) } ?? Image(systemName: "photo"))) {
+
+                    Image(systemName: "square.and.arrow.up")
+                }
+                .simultaneousGesture(TapGesture().onEnded {
+                    if shareImage == nil {
                         let targetSize = CGSize(width: 2048, height: 2048)
                         let options = PHImageRequestOptions()
                         options.isSynchronous = false
                         options.isNetworkAccessAllowed = true
                         options.deliveryMode = .highQualityFormat
+
                         PHImageManager.default().requestImage(
                             for: image.asset,
                             targetSize: targetSize,
@@ -72,16 +75,14 @@ struct PhotoDetails: View {
                         ) { ui, _ in
                             self.shareImage = ui
                         }
-                    } label: {
-                        Image(systemName: "square.and.arrow.up")
                     }
-                }
+                })
 
                 Spacer()
 
-                Button(action: {
+                Button {
                     showInfo = true
-                }) {
+                } label: {
                     Image(systemName: "info.circle")
                 }
             }

@@ -6,6 +6,7 @@ import SwiftData
 final class LibraryViewModel: ObservableObject {
     @Published var images: [ImageItem] = []
     @Published var authorizationStatus: PHAuthorizationStatus = .notDetermined
+    var service = ImageService()
 
     var unsortedImages: [ImageItem] {
         images.filter { !$0.sorted }
@@ -58,6 +59,14 @@ final class LibraryViewModel: ObservableObject {
             images[i].archived = false
             upsertRecord(id: images[i].id, archived: false, sorted: images[i].sorted)
         }
+    }
+    
+    func deleteItems(ids: Set<String>, completion: @escaping (Bool) -> Void) {
+        let assets = images
+            .filter { ids.contains($0.id) }
+            .compactMap { $0.asset }
+
+        service.delete(assets: assets, vm: self, completion: completion)
     }
 
     // Called by ImageService after it mutates an image in-place (move/sort).
