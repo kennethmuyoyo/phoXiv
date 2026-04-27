@@ -8,18 +8,28 @@
 import SwiftUI
 import PhotosUI
 
+enum TabSelection {
+    case sort
+    case library
+    case archive
+}
+
 struct ContentView: View {
-    var body: some View {        
-        TabView {
-            Tab("Sort", systemImage: "move.3d") {
-                SortView()
-            }
-            Tab("Library", systemImage: "photo.fill") {
-                Library()
-            }
-            Tab("Archive", systemImage: "archivebox.fill") {
-                Archive()
-            }
+    @State private var selectedTab: TabSelection = .library // Default to Library
+
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            SortView()
+                .tabItem { Label("Sort", systemImage: "arrow.left.arrow.right.circle") }
+                .tag(TabSelection.sort)
+
+            Library()
+                .tabItem { Label("Library", systemImage: "photo.fill") }
+                .tag(TabSelection.library)
+
+            Archive()
+                .tabItem { Label("Archive", systemImage: "archivebox.fill") }
+                .tag(TabSelection.archive)
         }
     }
 }

@@ -7,6 +7,7 @@
 import SwiftUI
 import Photos
 import PhotosUI
+import MapKit
 
 struct PhotoDetails: View {
     let image: ImageItem
@@ -15,7 +16,6 @@ struct PhotoDetails: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var vm = PhotoDetailsViewModel()
     
-    @State private var showShare = false
     @State private var showInfo = false
     @State private var shareImage: UIImage?
 
@@ -32,24 +32,49 @@ struct PhotoDetails: View {
         }
         .background(Color.black.edgesIgnoringSafeArea(.all))
         .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text(location)
-                    .foregroundColor(.primary)
-                    .font(.headline)
-            }
-
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button(image.archived ? "Unarchive" : "Archive") {
                     vm.moveFromToArchive(image: image, vm: lvm, dismiss: dismiss)
+                }
+            }
+            ToolbarSpacer(placement: .topBarTrailing)
+            ToolbarItem(placement: .topBarTrailing) {
+                if image.archived {
+                    Button(role: .destructive) {
+                        ImageService().delete(asset: image.asset, vm: lvm) { success in
+                            if success { dismiss() }
+                        }
+                    } label: {
+                        Image(systemName: "trash")
+                            .foregroundStyle(.red)
+                    }
                 }
             }
 
             // Bottom toolbar
             ToolbarItemGroup(placement: .bottomBar) {
-                Button(action: {
-                    showShare = true
-                }) {
-                    Image(systemName: "square.and.arrow.up")
+                if let uiImage = shareImage {
+                    ShareLink(item: Image(uiImage: uiImage), preview: SharePreview("Photo", image: Image(uiImage: uiImage))) {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                } else {
+                    Button {
+                        let targetSize = CGSize(width: 2048, height: 2048)
+                        let options = PHImageRequestOptions()
+                        options.isSynchronous = false
+                        options.isNetworkAccessAllowed = true
+                        options.deliveryMode = .highQualityFormat
+                        PHImageManager.default().requestImage(
+                            for: image.asset,
+                            targetSize: targetSize,
+                            contentMode: .aspectFill,
+                            options: options
+                        ) { ui, _ in
+                            self.shareImage = ui
+                        }
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                    }
                 }
 
                 Spacer()
@@ -59,45 +84,18 @@ struct PhotoDetails: View {
                 }) {
                     Image(systemName: "info.circle")
                 }
-
-                Spacer()
-
-                Button(role: .destructive) {
-                    ImageService().delete(asset: image.asset, vm: lvm) { success in
-                        if success { dismiss() }
-                    }
-                } label: {
-                    Image(systemName: "trash")
-                }
             }
         }
         .toolbarBackground(.visible, for: .navigationBar, .bottomBar)
         .toolbarColorScheme(.none, for: .navigationBar, .bottomBar)
         .toolbar(.hidden, for: .tabBar)
-        .sheet(isPresented: $showShare) {
-            if let uiImage = shareImage {
-                ShareSheet(activityItems: [uiImage])
-            } else {
-                Text("Nothing to share")
-            }
-        }
         .sheet(isPresented: $showInfo) {
             InfoView(image: image)
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
         }
         .onAppear {
             vm.loadFullSizeImage(from: image.asset)
-            let targetSize = CGSize(width: 2048, height: 2048)
-            ImageService().getImage(from: image.asset, size: targetSize) { _ in
-                // Always fetch a UIImage for sharing via PHImageManager
-                let options = PHImageRequestOptions()
-                options.isSynchronous = false
-                options.isNetworkAccessAllowed = true
-                options.deliveryMode = .highQualityFormat
-                PHImageManager.default().requestImage(for: image.asset, targetSize: targetSize, contentMode: .aspectFill, options: options) { ui, _ in
-                    self.shareImage = ui
-                }
-            }
         }
     }
 }
@@ -126,21 +124,22 @@ struct InfoView: View {
                 }
             }
             HStack {
-                Text("Identifier")
-                Spacer()
-                Text(image.id)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.trailing)
-            }
-            HStack {
                 Text("Dimensions")
                 Spacer()
                 Text("\(image.asset.pixelWidth) × \(image.asset.pixelHeight)")
                     .foregroundStyle(.secondary)
             }
+            // Map section if location is available
+            if let coordinate = image.asset.location?.coordinate {
+                Section("Location") {
+                    Map(initialPosition: .region(MKCoordinateRegion(center: coordinate, span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02))))
+                        .frame(height: 200)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+            }
         }
         .navigationTitle("Info")
+        .scrollDisabled(true)
     }
 }
 
@@ -152,3 +151,4 @@ struct InfoView: View {
             .navigationTitle("Preview")
     }
 }
+
